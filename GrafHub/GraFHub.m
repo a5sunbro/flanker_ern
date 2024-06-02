@@ -113,7 +113,6 @@ for i=1:N
     end
 end
 
-ZN1 = permute(sum(pagemtimes(permute(zn, [2 3 1]), pagemtimes(Ln,permute(zn, [3 2 1]))), [1 2]), [3 1 2]);
 
 %% Initializations
 mu1=rand(N,p);
@@ -137,16 +136,18 @@ for n=1:40
     count1=0;
     count2=0;
     SZ=0;
-    for t=1:p
-    for k=1:N
-        count1=0;
-        SZnew=SZ+sum(ZN1,3);
-        SZ=SZnew;
-        count2=count2+1;
-        ZN2(:,:,count2)=zn(:,t,k)*zn(:,t,k)';
-        b(:,:,count2)=zn(:,t,k)*E(k,t);
+    for t=1:p       
+        %This is the equivalent of allsumofp(S(:,:,p)*L*S(:,:,p)')
+        ZN1 = permute(zn(:,t,:), [1,3,2])*Ln*permute(zn(:,t,:), [1,3,2])';
+        SZnew = SZ + ZN1;
+        SZ = SZnew;
+        for k=1:N
+            count2=count2+1;
+            ZN2(:,:,count2)=zn(:,t,k)*zn(:,t,k)';
+            b(:,:,count2)=zn(:,t,k)*E(k,t);
+        end
     end
-    end
+
     Y=2*SZ+rho*sum(ZN2,3);
     h_new=-inv(Y)*rho*sum(b,3);
     h_new=h_new/norm(h_new);
